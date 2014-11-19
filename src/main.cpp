@@ -71,7 +71,7 @@ void parseParameters(int argc, char* argv[],
 SVGZ format is highly recommended, but optional. It was found to
 use half of CPU time as PNG encoding and roughly the same disk space.
 
-Create a default config file with --createconfig flags. If not
+Create a default config file with --createconfig flags. If no
 filename is specified, it will default to: 'pip-timelapse-config.info'.
 
 If CONFIG.info file is provided and doesn't exist, it fails.

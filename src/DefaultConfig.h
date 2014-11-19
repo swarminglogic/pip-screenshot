@@ -4,7 +4,7 @@
 #include <string>
 namespace piptimelapse {
 const std::string defaultConfig = R"(
-; Configuration file for pip-timelapse utility
+; Configuration file for pip-screenshot utility
 
 monitor {
     ;; This defines monitor sizes and positions
@@ -48,8 +48,7 @@ pip {
             w 100
             h 100
         }
-        offset
-        {
+        offset {
             x 2
             y 2
         }
