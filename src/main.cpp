@@ -43,6 +43,20 @@ void makePip(Magick::Image& screen,
   screen = shadow;
 }
 
+bool writeConfigFile(const std::string& outfile)
+{
+  std::ofstream conffile(outfile, std::ofstream::out);
+  if (conffile.good()) {
+    std::cout << "Config file '" << outfile << "' created." << std::endl;
+    conffile << piptimelapse::defaultConfig;
+    conffile.close();
+  } else {
+    std::cerr << "Failed to create config file: "
+              << outfile << std::endl;
+    return false;
+  }
+  return true;
+}
 
 void parseParameters(int argc, char* argv[],
                      std::string& output,
@@ -51,28 +65,42 @@ void parseParameters(int argc, char* argv[],
   if (argc < 2) {
     std::cerr << "Invalid parameters.\n"
               << "Usage: \n"
+              << argv[0] << " --createconfig [CONFIG.info]\n"
               << argv[0] << " OUTFILE.svgz [CONFIG.info]\n"
-              << "\n"
-              << "SVGZ format is highly recommended, but optional.\n"
-              << "It was found to use half of CPU time as PNG encoding \n"
-              << "and roughly the same disk space. \n"
-              << "\n"
-              << "If CONFIG.info file is not provided, file 'pip-timelapse-\n"
-              << "config.info' with default configuration is either (used if \n"
-              << "found), or created (if not found).\n"
-              << "\n"
-              << "If CONFIG.info file is provided and doesn't exist, it \n"
-              << "creates this file with default configuration"
-              <<  std::endl;
+              << R"(
+SVGZ format is highly recommended, but optional. It was found to
+use half of CPU time as PNG encoding and roughly the same disk space.
+
+Create a default config file with --createconfig flags. If not
+filename is specified, it will default to: 'pip-timelapse-config.info'.
+
+If CONFIG.info file is provided and doesn't exist, it fails.
+)" <<  std::endl;
     exit(EXIT_FAILURE);
   }
 
-  if (argc > 1)
-    output = argv[1];
-  if (argc > 2)
-    config = argv[2];
-  else
-    config = "pip-timelapse-config.info";
+  // Check if --createconfig flag set.
+  if (std::string(argv[1]) == std::string("--createconfig")) {
+    if (argc > 2)
+      config = argv[2];
+    else
+      config = "pip-timelapse-config.info";
+
+    if (boost::filesystem::exists(config)) {
+      std::cerr << "Specified config file already exists! Aborting."
+                << std::endl;
+      exit(EXIT_FAILURE);
+    } else {
+      writeConfigFile(config);
+    }
+  } else {
+    if (argc > 1)
+      output = argv[1];
+    if (argc > 2)
+      config = argv[2];
+    else
+      config = "pip-timelapse-config.info";
+  }
 }
 
 int main(int argc, char* argv[])
@@ -84,16 +112,10 @@ int main(int argc, char* argv[])
 
   // Check if config file or create default
   if (!boost::filesystem::exists(configFile)) {
-    std::ofstream conffile(configFile, std::ofstream::out);
-    if (conffile.good()) {
-      conffile << piptimelapse::defaultConfig;
-      conffile.close();
-    } else {
-      std::cerr << "Failed to create config file: "
-                << configFile << std::endl;
-      return EXIT_FAILURE;
-    }
+    std::cerr << "Couldn't find config file" << std::endl;
+    return EXIT_FAILURE;
   }
+
   // Load configuration from config file
   pt::ptree config;
   boost::property_tree::read_info(configFile, config);

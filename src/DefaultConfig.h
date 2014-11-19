@@ -6,10 +6,6 @@ namespace piptimelapse {
 const std::string defaultConfig = R"(
 ; Configuration file for pip-timelapse utility
 
-general {
-    delay 3.0 ; time in seconds between each capture
-}
-
 monitor {
     ;; This defines monitor sizes and positions
     ;;
