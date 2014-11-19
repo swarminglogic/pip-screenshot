@@ -1,0 +1,60 @@
+import os, re, imp
+
+Import('env')
+
+base ='#/src'
+target = '#/bin/pip-screenshot'
+
+pathBoost  = os.getenv('BOOST_DIR', '/usr/lib/x86_64-linux-gnu/')
+pathIM     = os.getenv('IMAGEMAGICK_PATH', '/usr/include/ImageMagick')
+
+lBoost    = ['boost_system', 'boost_filesystem']
+lOther    = ['m', 'dl', 'rt']
+lIM       = ['Magick++', 'MagickCore']
+lX11      = ['X11']
+lAll = lBoost + lIM + lX11 + lOther
+
+libpaths = [pathBoost + '/lib']
+
+gccWarningLevel = [
+   '-Wall', '-Wextra', '-Wcast-align', '-Wcast-qual',
+   '-fpermissive',
+   '-Wconversion', '-Wdisabled-optimization', #'-Weffc++',
+   '-Wfloat-equal', '-Wformat=2', '-Wimport', '-Winit-self',
+   '-Winline', '-Winvalid-pch', '-Wlong-long',
+   '-Wmissing-format-attribute', '-Wmissing-include-dirs',
+   '-Wmissing-noreturn', '-Wpacked', '-Wpointer-arith',
+   '-Wredundant-decls', '-Wshadow', '-Wstack-protector',
+   '-Wstrict-aliasing=2', '-Wunreachable-code',
+   '-Wunsafe-loop-optimizations', '-Wunused',
+   '-Wvariadic-macros', '-Wwrite-strings', '-pedantic',
+   '-pedantic-errors', '-Woverloaded-virtual',
+   '-Wswitch-enum', # '-Werror'
+]
+
+# CPPFLAGS
+####################
+cppflags = ['-O2']
+cppflags.extend(['-fopenmp', '-std=c++11'])
+cppflags.extend(['-isystem', pathBoost + '/include',
+                 '-isystem', pathIM])
+cppflags.extend(gccWarningLevel)
+
+sourcepaths = [
+   base,
+   pathIM,
+   pathBoost + '/include']
+
+
+######################
+# Main Application
+#######################
+cppMain = [Glob('main.cpp') +
+           Glob('ScreenCapture.cpp')]
+app = env.Program(target, cppMain,
+                  LIBS = lAll,
+                  LIBPATH  = libpaths,
+                  CPPFLAGS = cppflags,
+                  CPPPATH  = sourcepaths)
+Default(app)
+
