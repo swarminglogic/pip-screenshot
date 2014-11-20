@@ -34,8 +34,8 @@ gccWarningLevel = [
 
 # CPPFLAGS
 ####################
-cppflags = ['-O2']
-cppflags.extend(['-fopenmp', '-std=c++11'])
+cppflags = ['-O0']
+cppflags.extend(['-std=c++11'])
 cppflags.extend(['-isystem', pathBoost + '/include',
                  '-isystem', pathIM])
 cppflags.extend(gccWarningLevel)

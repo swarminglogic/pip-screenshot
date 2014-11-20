@@ -151,7 +151,12 @@ int main(int argc, char* argv[])
                       pgW - secondary.size().width() - pipOffX,
                       pgH - secondary.size().height() - pipOffY,
                       Magick::OverCompositeOp);
+
   // Write frame to file
+  // Removes alpha channe
+  principal.matte(false);
+  principal.depth(8);
+  principal.compressType(Magick::RunlengthEncodedCompression);
   principal.write(outputFile);
 
   return EXIT_SUCCESS;

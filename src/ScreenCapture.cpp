@@ -27,7 +27,8 @@ Magick::Image ScreenCapture::getScreenShot(Magick::Geometry g) const
                       "BGRA",
                       Magick::CharPixel,
                       screencap->data);
-  image.opacity(0);
+  image.matte(false);
+  image.depth(8);
   XDestroyImage(screencap);
   return std::move(image);
 }
