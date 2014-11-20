@@ -148,9 +148,8 @@ A few utility scripts found in `scripts/` folder:
   Each frame is numbered and stored in output-folder/frames
 
 
-* `pip-rendervideo.sh` Converts all frames from `pip-timelapse.sh`
-  to a temporary `PPM` format, then uses `ffmpeg` to create an `mp4`
-  video from these frames.
+* `pip-rendervideo.sh` Uses `ffmpeg` to create an `mp4`
+   video from the frames created by `pip-timelapse.sh`.
 
 
 * `pip-mkdir.sh`: Creates numerated and date-stamped.
