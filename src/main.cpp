@@ -40,7 +40,7 @@ void makePip(Magick::Image& screen,
                    config.get<int>("pip.shadow.offset.x"),
                    config.get<int>("pip.shadow.offset.y"),
                    Magick::OverCompositeOp);
-  screen = shadow;
+  screen = std::move(shadow);
 }
 
 bool writeConfigFile(const std::string& outfile)
@@ -48,7 +48,7 @@ bool writeConfigFile(const std::string& outfile)
   std::ofstream conffile(outfile, std::ofstream::out);
   if (conffile.good()) {
     std::cout << "Config file '" << outfile << "' created." << std::endl;
-    conffile << piptimelapse::defaultConfig;
+    conffile << pipfiles::defaultConfig;
     conffile.close();
   } else {
     std::cerr << "Failed to create config file: "
@@ -58,24 +58,21 @@ bool writeConfigFile(const std::string& outfile)
   return true;
 }
 
+void displayUsage(std::ostream& out, const std::string& argv0) {
+  out << " Usage: \n"
+      << " " << argv0 << " --help\n"
+      << " " << argv0 << " --createconfig [CONFIG.info]\n"
+      << " " << argv0 << " OUTFILE.FMT [CONFIG.info]\n"
+      << pipfiles::helpOutupt << std::endl;
+}
+
 void parseParameters(int argc, char* argv[],
                      std::string& output,
                      std::string& config) {
   (void) argc;
   if (argc < 2) {
-    std::cerr << "Invalid parameters.\n"
-              << "Usage: \n"
-              << argv[0] << " --createconfig [CONFIG.info]\n"
-              << argv[0] << " OUTFILE.svgz [CONFIG.info]\n"
-              << R"(
-SVGZ format is highly recommended, but optional. It was found to
-use half of CPU time as PNG encoding and roughly the same disk space.
-
-Create a default config file with --createconfig flags. If no
-filename is specified, it will default to: 'pip-screenshot-config.info'.
-
-If CONFIG.info file is provided and doesn't exist, it fails.
-)" <<  std::endl;
+    std::cerr << "Invalid parameters." << std::endl;
+    displayUsage(std::cerr, argv[0]);
     exit(EXIT_FAILURE);
   }
 
@@ -93,6 +90,9 @@ If CONFIG.info file is provided and doesn't exist, it fails.
     } else {
       writeConfigFile(config);
     }
+  } else if (std::string(argv[1]) == std::string("--help")) {
+    displayUsage(std::cout, argv[0]);
+    exit(EXIT_SUCCESS);
   } else {
     if (argc > 1)
       output = argv[1];

@@ -2,7 +2,7 @@
 
 # $1:counter  $2:folderOuput
 function doFrameCapture {
-    outputfile=${2}/frames/$(printf '%.5d' $1)'.svgz'
+    outputfile=${2}/frames/$(printf '%.5d' $1)'.'$image_ext
     pip-screenshot "$outputfile"
 }
 
@@ -10,17 +10,26 @@ function showHelp() {
 echo "pip-timelapse - calls pip-screenshot at regular intervals
 
 Usage:
-$0 DELAY OUTPUTDIR
+$0 OUTPUTDIR [DELAY]
 
-DELAY      Time between each screen capture
 OUTPUTDIR  Directory to store pip screen captures './frames' subdir.
+DELAY      Time between each screen capture (default=3.0)
 
 "
 }
 
-delay=$1
-outputFolder=$2
+if [ $# -lt 1 ] ; then
+    echo "Error: Missing output dir parameter." >&2
+    showHelp
+    exit 1
+fi
+
+
+outputFolder=$1
+delay=${2:-"3"}
+image_ext='sgi'
 curr=0
+
 if [ -e $outputFolder/frames ] ; then
     lastFrame=`ls -1 $outputFolder/frames/ | tail -n 1`
     curr=`echo ${lastFrame%.*} | sed 's/^0*//'`

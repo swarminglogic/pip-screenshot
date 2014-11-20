@@ -4,18 +4,61 @@ pip-screenshot
 Utility for creating a screenshot of an X11 display region, and
 overlaying a different region as a picture-in-picture.
 
-## Usage
+## Documentation
 ```
-./pip-screenshot --createconfig [CONFIG.info]
-./pip-screenshot OUTFILE.svgz  [CONFIG.info]
+ Usage:
+ ./pip-screenshot --help
+ ./pip-screenshot --createconfig [CONFIG.info]
+ ./pip-screenshot OUTFILE.FMT [CONFIG.info]
 
-SVGZ format is highly recommended, but optional. It was found to
-use half of CPU time as PNG encoding and roughly the same disk space.
+ Use --createconfig flag to create a default config file. If no
+ filename is specified, it will default to: 'pip-screenshot-config.info'.
+ If CONFIG.info file is provided and doesn't exist, it fails.
 
-Create a default config file with --createconfig flags. If no
-filename is specified, it will default to: 'pip-screenshot-config.info'.
+ FMT extension determines which image format is used for the output.
+ Whether or not this works depends on your ImageMagick implementation,
+ To see the list of available formats: `convert -list formats`.
 
-If CONFIG.info file is provided and doesn't exist, it fails.
+ Which format is best suited depends on your priority: CPU usage,
+ file size, and/or image quality. Uncompressed formats require
+ very little processing, but take up a large amount of space.
+
+ Lossless formats are usually preferable for screenshots, as desktop
+ graphics contain a lot of high contrasting areas. Suggested lossless
+ formats are:
+
+ |--------+------+------+------+------+----------+-----------|
+ | Format | Avg. | Enc. | Dec. | Rel. | Rel. enc | Rel. dec. |
+ |        | Size | time | time | size |  speedup |   speedup |
+ |--------+------+------+------+------+----------+-----------|
+ | ppm    | 6076 | 0.76 | 0.76 | 14.0 |      7.5 |       2.3 |
+ | sgi    | 1276 | 0.97 | 0.94 |  2.9 |      5.8 |       1.9 |
+ | pcx    | 1350 | 1.38 | 1.97 |  3.1 |      4.1 |       0.9 |
+ | pict   | 1249 | 1.50 | 2.40 |  2.9 |      3.8 |       0.7 |
+ | svgz   |  544 | 2.40 | 1.15 |  1.3 |      2.4 |       1.5 |
+ | png    |  435 | 5.64 | 1.77 |  1.0 |      1.0 |       1.0 |
+ |--------+------+------+------+------+----------+-----------|
+
+ The table above shows average frame sizes (in KiB), decoding and
+ encoding times (in s). Not surprisingly, the better the file-size
+ compression, the more cpu-expensive the process is. Relative
+ factors are computed against PNG.
+
+ Of these, ffmpeg supports PPM, SGI and PNG.
+
+ The SGI format stands out significantly, in that it is quick to
+ encode/decode, as well as give a good filesize reduction.
+
+ If CPU usage is most important, and disk usage doesn't matter,
+ use PPM (or any other uncompressed format, e.g BMP)
+
+ If CPU usage doesn't matter, and filesize really does, use PNG.
+
+ Mainted at: https://github.com/swarminglogic/pip-screenshot
+ Author:     Roald Fernandez (github@swarminglogic.com)
+ Version:    0.1.0 (2014-11-20)
+ License:    MIT-license (see LICENSE file)
+
 ```
 
 ## Compiling
@@ -141,7 +184,7 @@ Together, the above scripts allow the following timelapse creation workflow:
  1. Start time-lapse recording that captures a frame every 3 seconds:
 
     ```
-    nice ./pip-timelapse.sh 3 001_2014-11-20_foowork
+    nice ./pip-timelapse.sh 001_2014-11-20_foowork 3
     ```
 
     Pause it with `ctrl-z`, and unpause with `fg`. Stop with `ctrl-c`
