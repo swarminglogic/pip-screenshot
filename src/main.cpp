@@ -72,7 +72,7 @@ SVGZ format is highly recommended, but optional. It was found to
 use half of CPU time as PNG encoding and roughly the same disk space.
 
 Create a default config file with --createconfig flags. If no
-filename is specified, it will default to: 'pip-timelapse-config.info'.
+filename is specified, it will default to: 'pip-screenshot-config.info'.
 
 If CONFIG.info file is provided and doesn't exist, it fails.
 )" <<  std::endl;
@@ -84,7 +84,7 @@ If CONFIG.info file is provided and doesn't exist, it fails.
     if (argc > 2)
       config = argv[2];
     else
-      config = "pip-timelapse-config.info";
+      config = "pip-screenshot-config.info";
 
     if (boost::filesystem::exists(config)) {
       std::cerr << "Specified config file already exists! Aborting."
@@ -99,7 +99,7 @@ If CONFIG.info file is provided and doesn't exist, it fails.
     if (argc > 2)
       config = argv[2];
     else
-      config = "pip-timelapse-config.info";
+      config = "pip-screenshot-config.info";
   }
 }
 
