@@ -15,10 +15,12 @@
 namespace pt = boost::property_tree;
 
 void makePip(Magick::Image& screen,
-             const pt::ptree& config)
+             const pt::ptree& config,
+             const Magick::Geometry& pipGeom,
+             const float sigma)
 {
-  Magick::Geometry rPip(config.get<int>("pip.size.w"),
-                        config.get<int>("pip.size.h"),
+  Magick::Geometry rPip(pipGeom.width(),
+                        pipGeom.height(),
                         0, 0);
   const int w = config.get<int>("pip.border.width");
 
@@ -32,21 +34,10 @@ void makePip(Magick::Image& screen,
   // Add shadow
   Magick::Image shadow = screen;
   shadow.backgroundColor(config.get<std::string>("pip.shadow.color"));
-
-  const float sigma = config.get<float>("pip.shadow.sigma");
-
-  // Get shadow pos values, and clamp to legal range
-  float x = config.get<float>("pip.shadow.pos.x");
-  float y = config.get<float>("pip.shadow.pos.y");
-  x = std::min(std::max(x, -1.0f), 1.0f);
-  y = std::min(std::max(y, -1.0f), 1.0f);
-  const int xoff = (-x + 1.0f) * 2.0f * sigma;
-  const int yoff = (-y + 1.0f) * 2.0f * sigma;
-
   shadow.shadow(config.get<int>("pip.shadow.opacity"),
                 sigma, 0, 0);
   shadow.composite(screen,
-                   xoff, yoff,
+                   pipGeom.xOff(), pipGeom.yOff(),
                    Magick::OverCompositeOp);
   screen = std::move(shadow);
 }
@@ -132,35 +123,52 @@ int main(int argc, char* argv[])
   boost::property_tree::read_info(configFile, config);
 
   // Read config values
-  const int pgW = config.get<int>("monitor.principal.w");
-  const int pgH = config.get<int>("monitor.principal.h");
-  const int pgX = config.get<int>("monitor.principal.x");
-  const int pgY = config.get<int>("monitor.principal.y");
+  const int prinW = config.get<int>("monitor.principal.w");
+  const int prinH = config.get<int>("monitor.principal.h");
+  const int prinX = config.get<int>("monitor.principal.x");
+  const int prinY = config.get<int>("monitor.principal.y");
 
-  const int sgW = config.get<int>("monitor.secondary.w");
-  const int sgH = config.get<int>("monitor.secondary.h");
-  const int sgX = config.get<int>("monitor.secondary.x");
-  const int sgY = config.get<int>("monitor.secondary.y");
+  const int secW = config.get<int>("monitor.secondary.w");
+  const int secH = config.get<int>("monitor.secondary.h");
+  const int secX = config.get<int>("monitor.secondary.x");
+  const int secY = config.get<int>("monitor.secondary.y");
 
-  const int pipOffX = config.get<int>("pip.pos.x");
-  const int pipOffY = config.get<int>("pip.pos.y");
+  // How many pixels to offset the PiP, from bottom right
+  const float sigma = config.get<float>("pip.shadow.sigma");
+  const float pipShadowX = config.get<float>("pip.shadow.pos.x");
+  const float pipShadowY = config.get<float>("pip.shadow.pos.y");
+  const int pipPosX = config.get<int>("pip.pos.x");
+  const int pipPosY = config.get<int>("pip.pos.y");
+  const int pipW = config.get<int>("pip.size.w");
+  const int pipH = config.get<int>("pip.size.h");
+
+  // Where to overlay the PiP relative to shadow
+  const int pipPosXShadow = (-pipShadowX + 1.0f) * 2.0f * sigma;
+  const int pipPosYShadow = (-pipShadowY + 1.0f) * 2.0f * sigma;
+
+  // Adjustment offset for change in PiP position within the pip image,
+  // caused by the drop-shadow
+  const int pipPosXShadowOff = 2.0f * sigma * (1.0f + pipShadowX);
+  const int pipPosYShadowOff = 2.0f * sigma * (1.0f + pipShadowY);
 
   // Initalize image magick
   Magick::InitializeMagick(*argv);
-  Magick::Geometry principalGeom(pgW, pgH, pgX, pgY);
-  Magick::Geometry secondaryGeom(sgW, sgH, sgX, sgY);
+  Magick::Geometry prinGeom(prinW, prinH, prinX, prinY);
+  Magick::Geometry secGeom(secW, secH, secX, secY);
+  Magick::Geometry pipGeom(pipW, pipH, pipPosXShadow, pipPosYShadow);
 
   // Get screen capture from X11
   ScreenCapture sc;
-  Magick::Image principal = sc.getScreenShot(principalGeom);
-  Magick::Image secondary = sc.getScreenShot(secondaryGeom);
+  Magick::Image principal = sc.getScreenShot(prinGeom);
+  Magick::Image secondary = sc.getScreenShot(secGeom);
 
   // Convert secondary screen to PiP thumbnail
-  makePip(secondary, config);
-  // Overlay PiP on principal screen
+  makePip(secondary, config, pipGeom, sigma);
   principal.composite(secondary,
-                      pgW - secondary.size().width() - pipOffX,
-                      pgH - secondary.size().height() - pipOffY,
+                      (prinGeom.width() - secondary.size().width() -
+                       pipPosX + pipPosXShadowOff),
+                      (prinGeom.height() - secondary.size().height() -
+                       pipPosY + pipPosYShadowOff),
                       Magick::OverCompositeOp);
 
   // Write frame to file
