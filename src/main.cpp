@@ -27,6 +27,7 @@ void makePip(Magick::Image& screen,
   // Resize image and add border
   const Magick::Geometry border(w, w, 0, 0);
   screen.backgroundColor("none");
+  screen.filterType(Magick::LanczosFilter);
   screen.resize(rPip);
   screen.borderColor(config.get<std::string>("pip.border.color"));
   screen.border(border);
@@ -143,13 +144,17 @@ int main(int argc, char* argv[])
   const int pipH = config.get<int>("pip.size.h");
 
   // Where to overlay the PiP relative to shadow
-  const int pipPosXShadow = (-pipShadowX + 1.0f) * 2.0f * sigma;
-  const int pipPosYShadow = (-pipShadowY + 1.0f) * 2.0f * sigma;
+  const int pipPosXShadow = static_cast<int>((-pipShadowX + 1.0f) *
+                                             2.0f * sigma);
+  const int pipPosYShadow = static_cast<int>((-pipShadowY + 1.0f) *
+                                             2.0f * sigma);
 
   // Adjustment offset for change in PiP position within the pip image,
   // caused by the drop-shadow
-  const int pipPosXShadowOff = 2.0f * sigma * (1.0f + pipShadowX);
-  const int pipPosYShadowOff = 2.0f * sigma * (1.0f + pipShadowY);
+  const int pipPosXShadowOff = static_cast<int>(2.0f * sigma *
+                                                (1.0f + pipShadowX));
+  const int pipPosYShadowOff = static_cast<int>(2.0f * sigma *
+                                                (1.0f + pipShadowY));
 
   // Initalize image magick
   Magick::InitializeMagick(*argv);
