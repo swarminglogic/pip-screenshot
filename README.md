@@ -4,6 +4,14 @@ pip-screenshot
 Utility for creating a screenshot of an X11 display region, and
 overlaying a different region as a picture-in-picture.
 
+
+## Example
+
+PiP on the lower right is the content of the secondary montior:
+
+ [![Test](/example-thumb.png)](/example.png?raw=true)
+
+
 ## Documentation
 ```
  Usage:
