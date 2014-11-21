@@ -94,14 +94,15 @@ pip {
     shadow {
         color "black"
         opacity 90 ; 0-100
-        sigma 2.5
-        size {
-            w 100
-            h 100
-        }
-        offset {
-            x 2
-            y 2
+        sigma 5.0
+
+        ; Shadow position [-1.0 .. 1.0] (clamped)
+        ;    -1.0 -> shadow in top / left
+        ;     1.0 -> shadow in bottom / right
+        ;     0.0 -> shadow centered
+        pos {
+            x 0.5
+            y 0.5
         }
     }
 

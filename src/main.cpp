@@ -32,13 +32,21 @@ void makePip(Magick::Image& screen,
   // Add shadow
   Magick::Image shadow = screen;
   shadow.backgroundColor(config.get<std::string>("pip.shadow.color"));
+
+  const float sigma = config.get<float>("pip.shadow.sigma");
+
+  // Get shadow pos values, and clamp to legal range
+  float x = config.get<float>("pip.shadow.pos.x");
+  float y = config.get<float>("pip.shadow.pos.y");
+  x = std::min(std::max(x, -1.0f), 1.0f);
+  y = std::min(std::max(y, -1.0f), 1.0f);
+  const int xoff = (-x + 1.0f) * 2.0f * sigma;
+  const int yoff = (-y + 1.0f) * 2.0f * sigma;
+
   shadow.shadow(config.get<int>("pip.shadow.opacity"),
-                config.get<float>("pip.shadow.sigma"),
-                config.get<int>("pip.shadow.size.w"),
-                config.get<int>("pip.shadow.size.h"));
+                sigma, 0, 0);
   shadow.composite(screen,
-                   config.get<int>("pip.shadow.offset.x"),
-                   config.get<int>("pip.shadow.offset.y"),
+                   xoff, yoff,
                    Magick::OverCompositeOp);
   screen = std::move(shadow);
 }
@@ -88,7 +96,10 @@ void parseParameters(int argc, char* argv[],
                 << std::endl;
       exit(EXIT_FAILURE);
     } else {
-      writeConfigFile(config);
+      if (writeConfigFile(config))
+        exit(EXIT_SUCCESS);
+      else
+        exit(EXIT_FAILURE);
     }
   } else if (std::string(argv[1]) == std::string("--help")) {
     displayUsage(std::cout, argv[0]);
