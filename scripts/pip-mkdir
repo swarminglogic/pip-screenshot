@@ -5,3 +5,6 @@ currId=$(cat .current)
 folder=$(printf '%.3d' $currId)_$(date +'%Y-%m-%d')_$1
 mkdir $folder
 echo $((++currId)) > .current
+echo ${folder}
+echo ${folder} > .current_folder
+

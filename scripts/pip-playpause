@@ -1,0 +1,49 @@
+#!/bin/bash
+
+function showHelp() {
+echo "pip-playpause - suspesnds pip-screen capture process
+
+Usage:
+$0
+
+"
+}
+
+function message() {
+    if [ -t 0 ] ; then
+        echo "$@"
+    else
+        notify-send "$@"
+    fi
+}
+
+function error() {
+    if [ -t 0] ; then
+        echo "$@" >&2
+    else
+        message "$@"
+    fi
+}
+
+
+function pidstate {
+    echo $(cat /proc/$1/stat | cut -d\  -f3)
+}
+
+
+pid=$(pgrep pip-timelapse | head -n1)
+if [ -z "$pid" ] ; then
+    error "Error: pip-timelapse process not running";
+    exit 0;
+else
+    # Determine state, running, or paused?
+    if [ "$(pidstate $pid)" == "S" ] ; then
+        message "Timelapse paused"
+        kill -SIGSTOP $pid
+    elif [ "$(pidstate $pid)" == "T" ] ; then
+        message "Timelapse resumed"
+        kill -SIGCONT $pid
+    else
+        message "PID ($pid) is at unknown state: $(pidstate $pid)"
+    fi
+fi

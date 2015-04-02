@@ -1,0 +1,60 @@
+#!/bin/bash
+
+function pidstate {
+    echo $(cat /proc/$1/stat | cut -d\  -f3)
+}
+
+pid=$(pgrep pip-timelapse | head -n1)
+
+# set -e
+# Source whatever you need to set up PATH
+PATH="$HOME/local/bin:$PATH"
+
+# Where to store the timelapses
+workdir=${PIP_WORKDIR:-/var/tmp/timelapses}
+captureDelay=${PIP_DELAY:-2}
+
+if [ -z "$pid" ] ; then
+    entry=$(zenity --entry --text='Enter timelapse name')
+    entry=${entry// /}
+    entry=${entry,,}
+
+    if [ -z "$entry" ] ; then
+        notify-send "Error, empty timelapse name"
+        exit 0
+    fi
+
+    cd "$workdir"
+    if [ ! -f pip-screenshot-config.info ] ; then
+        pip-screenshot --createconfig
+    fi
+
+    d=$(pip-mkdir "$entry")
+    (nice pip-timelapse "$d" $captureDelay) &
+    notify-send "Started timelapse: $d"
+else
+    if zenity --question --text="PiP timelapse running. Terminate?"
+    then
+        kill -9 $pid
+        notify-send "PiP timelapse terminated"
+
+        if zenity --question --text="Render video from timelapse capture?" ;
+        then
+            cd "$workdir"
+            d=$(cat .current_folder)
+            if [ -f .current_folder ] && [ -d ${d}/frames ]
+            then
+                notify-send "Starting video render"
+                nice pip-rendervideo ${d}
+                if [ $? -eq 0 ] ; then
+                    notify-send "Finished rendering video: $(pwd)/${d}/${d}.mp4"
+                else
+                    notify-send "Error rendering video. $(pwd)/${d}/${d}.mp4"
+                fi
+            else
+                notify-send "Could not render video"
+            fi
+        fi
+    fi
+fi
+

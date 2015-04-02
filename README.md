@@ -1,9 +1,11 @@
-pip-screenshot
+PiP-screenshot
 ==============
 
 Utility for creating a screenshot of an X11 display region, and
 overlaying a different region as a picture-in-picture.
 
+Together with provided scripts, it allows for timelapse capture
+and video rendering.
 
 ## Example
 
@@ -70,11 +72,18 @@ PiP on the lower right is the content of the secondary montior:
 ```
 
 ## Compiling
+
 The project can be built with `SCons` and requires `boost` and `Magick++`.
 
 Environment variables `BOOST_DIR` and `IMAGEMAGICK_PATH` can be used to help out.
 
 Compile the project by calling `scons` from the root.
+
+
+## Installing
+
+Create a symbolic link to `bin/pip-screenshot` as well as every `scripts/pip-*`
+file, to somewhere within the `PATH` variable (or just move them there).
 
 
 ## Config File (default)
@@ -149,31 +158,64 @@ pip {
 
 ```
 
+
+## Timelapse recording
+
+When everything is properly configured, a timelapse recording
+can be started and stopped with the `pip-startstop` script.
+
+During capture, the process can be paused/resumed using
+ `pip-playpause`.
+
+Call `pip-startstop` again for query to stop recording.
+If confirmed, it asks whether to process frames and render video.
+
+See below for details, and other helper scripts.
+
+
+
 ## Helper Scripts
 
 A few utility scripts found in `scripts/` folder:
 
-* `pip-timelapse.sh`: Calls `pip-screenshot` at regular intervals.
+* `pip-startstop`: Starts a timelapse screencapture session.
+
+Relevant environment variables (or simply modify script):
+
+  `PIP_WORKDIR` : output directory, default: `/var/tmp/timelapses`
+
+  `PIP_DELAY` : delay in seconds between frame captures, default: `2`
+
+Assign to global hotkey for ease-of-use.
+
+* `pip-playpause`: Pauses/resumes running timelapse recording.
+
+Assign to global hotkey for ease-of-use.
+
+
+* `pip-timelapse`: Calls `pip-screenshot` at regular intervals.
 
   Each frame is numbered and stored in output-folder/frames
 
 
-* `pip-rendervideo.sh` Uses `ffmpeg` to create an `mp4`
-   video from the frames created by `pip-timelapse.sh`.
+* `pip-rendervideo` Uses `ffmpeg` to create an `mp4`
+   video from the frames created by `pip-timelapse`.
 
 
-* `pip-mkdir.sh`: Creates numerated and date-stamped.
+* `pip-mkdir`: Creates numerated and date-stamped.
 
-  For example: `./pip-mkdir.sh foo` creates folder `001_2014-11-20_foo`
+  For example: `./pip-mkdir foo` creates folder `001_2014-11-20_foo`
 
-  Calling it again, creates folder `001_2014-11-20_foo`
+  Calling it again, creates folder `002_2014-11-20_foo`
 
   The current number is stored in `.current`
 
 
 ## Timelapse workflow
 
-Together, the above scripts allow the following timelapse creation workflow:
+If you're not using the `pip-startstop`, and `pip-playpause`,
+the process can be performed manually with the following:
+
 
  1. `[Only the first time]`. Create an initial config file
 
@@ -187,13 +229,13 @@ Together, the above scripts allow the following timelapse creation workflow:
  1. Create timelapse output folder `001_2014-11-20_foowork` using
 
     ```
-    ./pip-mkdir.sh foowork
+    ./pip-mkdir foowork
     ```
 
  1. Start time-lapse recording that captures a frame every 3 seconds:
 
     ```
-    nice ./pip-timelapse.sh 001_2014-11-20_foowork 3
+    nice ./pip-timelapse 001_2014-11-20_foowork 3
     ```
 
     Pause it with `ctrl-z`, and unpause with `fg`. Stop with `ctrl-c`
@@ -201,7 +243,7 @@ Together, the above scripts allow the following timelapse creation workflow:
  1. Create a timelapse video from captured frames with:
 
     ```
-    nice ./pip-rendervideo.sh 001_2014-11-20_foowork
+    nice ./pip-rendervideo 001_2014-11-20_foowork
     ```
 
     The video is stored as `001_2014-11-20_foowork/001_2014-11-20_foowork.mp4`
@@ -214,8 +256,9 @@ Together, the above scripts allow the following timelapse creation workflow:
 
 ---
 
-`Tip:` You might want to symlink or copy these scripts to somewhere in your
-`PATH` variable. For example:
+`Tip:` As mentioned earlier, you might want to symlink or copy these scripts
+to somewhere within in your `PATH` variable.
+
 ```
-     ln -s $(pwd)/scripts/pip-timelapse.sh ~/local/bin/timelapse
+     sudo ln -s $(pwd)/scripts/pip-timelapse /usr/bin/timelapse
 ```
