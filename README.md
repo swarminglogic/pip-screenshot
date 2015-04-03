@@ -77,7 +77,7 @@ The project can be built with `SCons` and requires `boost`, `Magick++`, `X11` an
 
 Install these with your favourite package manager. E.g.
 
-sudo apt-get install libboost-all-dev libx11-dev pkg-config scons libmagick++-dev
+`sudo apt-get install libboost-all-dev libx11-dev pkg-config scons libmagick++-dev`
 
 Compile the project by calling `. scripts/initialize.sh && scons` from the root.
 
@@ -264,3 +264,21 @@ to somewhere within in your `PATH` variable.
 ```
      sudo ln -s $(pwd)/scripts/pip-timelapse /usr/bin/timelapse
 ```
+
+---
+
+## Troubleshooting
+
+**Q: I'm getting the following `X Error`:**
+
+```
+X Error of failed request:  BadMatch (invalid parameter attributes)
+  Major opcode of failed request:  73 (X_GetImage)
+  Serial number of failed request:  7
+  Current serial number in output stream:  7
+```
+
+**A: You need to adjust the config file**
+
+manually set the monitor screen dimensions in the generated configure file, to
+mach the desktop configuration.
