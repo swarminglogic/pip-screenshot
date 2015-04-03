@@ -5,8 +5,8 @@ Import('env')
 base ='#/src'
 target = '#/bin/pip-screenshot'
 
-pathBoost  = os.getenv('BOOST_DIR', '/usr/lib/x86_64-linux-gnu/')
-pathIM     = os.getenv('IMAGEMAGICK_PATH', '/usr/include/ImageMagick')
+pathBoost  = os.getenv('BOOST_DIR', '/usr/')
+pathIM     = '`pkg-config Magick++ --variable=includedir`'
 
 lBoost    = ['boost_system', 'boost_filesystem']
 lOther    = ['m', 'dl', 'rt']
@@ -34,16 +34,14 @@ gccWarningLevel = [
 
 # CPPFLAGS
 ####################
-cppflags = ['-O0']
+cppflags = ['-O3', '-DNDEBUG']
 cppflags.extend(['-std=c++11'])
+cppflags.extend(gccWarningLevel)
 cppflags.extend(['-isystem', pathBoost + '/include',
                  '-isystem', pathIM])
-cppflags.extend(gccWarningLevel)
 
 sourcepaths = [
-   base,
-   pathIM,
-   pathBoost + '/include']
+   base]
 
 
 ######################

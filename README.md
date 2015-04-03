@@ -73,11 +73,13 @@ PiP on the lower right is the content of the secondary montior:
 
 ## Compiling
 
-The project can be built with `SCons` and requires `boost` and `Magick++`.
+The project can be built with `SCons` and requires `boost`, `Magick++`, `X11` and `pkg-config`.
 
-Environment variables `BOOST_DIR` and `IMAGEMAGICK_PATH` can be used to help out.
+Install these with your favourite package manager. E.g.
 
-Compile the project by calling `scons` from the root.
+sudo apt-get install libboost-all-dev libx11-dev pkg-config scons libmagick++-dev
+
+Compile the project by calling `. scripts/initialize.sh && scons` from the root.
 
 
 ## Installing
